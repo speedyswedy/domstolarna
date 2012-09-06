@@ -1,0 +1,120 @@
+<?php
+
+define('OVERRIDE_CSS_SETTINGS_PATH', 'admin/appearance/override_css/settings');
+
+/**
+ * Implements hook_menu().
+ */
+function override_css_settings_menu() {
+  $items = array();
+
+  if (variable_get('override_css_settings_enabled', FALSE)) {
+    $items[variable_get('override_css_settings_path', OVERRIDE_CSS_SETTINGS_PATH)] = array(
+      'title' => variable_get('override_css_settings_title', 'Override theme'),
+      'page callback' => 'override_css_settings_table',
+      'access arguments' => array('override css settings'),
+      'type' => variable_get('override_css_settings_type', MENU_LOCAL_TASK),
+      'weight' => 1,
+    );
+  }
+
+  return $items;
+}
+
+/**
+ * Page with settings table.
+ */
+function override_css_settings_table() {
+  $groups = override_css_selector_load_all();
+
+  $header = array(t('Title'), t('Description'), t('Actions'));
+
+  $rows = array();
+  foreach ($groups as $name => $group) {
+    $actions = array(
+      l(t('edit'), 'admin/appearance/override_css/list/'. $name .'/values', array('query' => array('destination' => variable_get('override_css_settings_path', OVERRIDE_CSS_SETTINGS_PATH)))),
+      l(t('reset'), 'admin/appearance/override_css/list/'. $name .'/reset', array('query' => array('destination' => variable_get('override_css_settings_path', OVERRIDE_CSS_SETTINGS_PATH)))),
+    );
+
+    $rows[] = array(
+      $group['title'],
+      $group['description'],
+      theme('item_list', array('items' => $actions, 'attributes' => array('class' => 'inline'))),
+    );
+  }
+
+  return theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No selector groups defined.')));
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function override_css_settings_form_alter(&$form, &$form_state, $form_id) {
+  switch ($form_id) {
+    case 'override_css_reset_selector_form':
+    case 'override_css_selector_value':
+      if ( !user_access('override css admin') && variable_get('override_css_settings_enabled', FALSE) ) {
+        $form_state['redirect'] = variable_get('override_css_settings_path', OVERRIDE_CSS_SETTINGS_PATH);
+      }
+      break;
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter to add options to admin form.
+ */
+function override_css_settings_form_override_css_admin_form_alter(&$form, &$form_state, $form_id) {
+  $form['override_css_settings_path_settings'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Properties of override css path.',
+  );
+
+  $form['override_css_settings_path_settings']['override_css_settings_enabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Enable simple settings page',
+    '#default_value' => variable_get('override_css_settings_enabled', FALSE),
+  );
+
+  $form['override_css_settings_path_settings']['override_css_settings_title'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Title',
+    '#default_value' => variable_get('override_css_settings_title', 'Override theme'),
+    '#states' => array(
+      'invisible' => array(
+       ':input[name="override_css_settings_enabled"]' => array('checked' => FALSE),
+      ),
+    ),
+  );
+
+  $form['override_css_settings_path_settings']['override_css_settings_path'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Path',
+    '#default_value' => variable_get('override_css_settings_path', OVERRIDE_CSS_SETTINGS_PATH),
+    '#states' => array(
+      'invisible' => array(
+       ':input[name="override_css_settings_enabled"]' => array('checked' => FALSE),
+      ),
+    ),
+  );
+
+  $form['override_css_settings_path_settings']['override_css_settings_type'] = array(
+    '#type' => 'select',
+    '#title' => 'Menu type',
+    '#default_value' => variable_get('override_css_settings_type', MENU_LOCAL_TASK),
+    '#options' => array(MENU_LOCAL_TASK => t('Tab'), MENU_NORMAL_ITEM => t('Normal')),
+    '#states' => array(
+      'invisible' => array(
+       ':input[name="override_css_settings_enabled"]' => array('checked' => FALSE),
+      ),
+    ),
+  );
+
+  $form['#submit'][] = 'override_css_settings_form_submit';
+}
+
+/**
+ * Rebuild menu on submitting admin form.
+ */
+function override_css_settings_form_submit($form, &$form_state) {
+  menu_rebuild();
+}

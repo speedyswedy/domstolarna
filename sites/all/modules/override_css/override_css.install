@@ -1,0 +1,87 @@
+<?php
+
+/**
+ * Implements hook_install().
+ */
+function override_css_install() {
+
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function override_css_uninstall() {
+
+}
+
+/**
+ * Implements hook_schema().
+ */
+function override_css_schema() {
+
+  $schema['override_css'] = array(
+    'description' => 'The table that holds override css settings.',
+
+    // CTools export definitions.
+    'export' => array(
+      'key' => 'name',
+      'key name' => 'Name',
+      'primary key' => 'name',
+      'identifier' => 'override_css',
+      'default hook' => 'override_css_defaults',
+      'status callback' => 'override_css_crud_set_status',
+      'api' => array(
+        'owner' => 'override_css',
+        'api' => 'override_css',
+        'minimum_version' => 1,
+        'current_version' => 1,
+      ),
+    ),
+
+    'fields' => array(
+      'name' => array(
+        'description' => 'The unique machine name of this setting.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'title' => array(
+        'description' => 'The human readable name of this setting.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'description' => array(
+        'description' => 'The description of the selectors.',
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'medium',
+      ),
+      'selectors' => array(
+        'description' => 'The selectors.',
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+      ),
+      'properties' => array(
+        'description' => 'The available properties for the selectors.',
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+      ),
+      'properties_values' => array(
+        'description' => 'The values of the properties.',
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'no export' => TRUE,
+      ),
+    ),
+    'primary key' => array('name'),
+  );
+  return $schema;
+}

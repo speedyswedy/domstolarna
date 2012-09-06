@@ -1,0 +1,15 @@
+name = Override css
+description = Override css through an UI.
+core = 7.x
+package = User interface
+configure = admin/appearance/override_css
+dependencies[] = ctools
+dependencies[] = fontyourface
+dependencies[] = google_fonts_api
+
+; Information added by drupal.org packaging script on 2012-08-22
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "override_css"
+datestamp = "1345596510"
+
